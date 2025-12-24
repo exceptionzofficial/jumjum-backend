@@ -3,7 +3,6 @@ const {
     PutCommand,
     GetCommand,
     ScanCommand,
-    QueryCommand,
     UpdateCommand
 } = require('@aws-sdk/lib-dynamodb');
 const { docClient, TABLES } = require('../config/dynamodb');
@@ -12,10 +11,12 @@ const { v4: uuidv4 } = require('uuid');
 class BillingModel {
     // Create a new bill
     static async create(billData) {
-        const billId = billData.billId || `BILL-${Date.now()}-${uuidv4().slice(0, 4).toUpperCase()}`;
+        // Use lowercase 'billid' to match DynamoDB table primary key
+        const billid = `BILL-${Date.now()}-${uuidv4().slice(0, 4).toUpperCase()}`;
 
         const bill = {
-            billId,
+            billid, // Primary key - lowercase to match DynamoDB
+            billId: billid, // Also store as camelCase for API consistency
             customer: billData.customer,
             items: billData.items,
             barItems: billData.barItems || [],
@@ -51,10 +52,10 @@ class BillingModel {
     }
 
     // Get bill by ID
-    static async getById(billId) {
+    static async getById(billid) {
         const params = {
             TableName: TABLES.BILLING,
-            Key: { billId },
+            Key: { billid }, // lowercase key
         };
 
         const result = await docClient.send(new GetCommand(params));
@@ -104,10 +105,10 @@ class BillingModel {
     }
 
     // Update bill status
-    static async updateStatus(billId, status) {
+    static async updateStatus(billid, status) {
         const params = {
             TableName: TABLES.BILLING,
-            Key: { billId },
+            Key: { billid }, // lowercase key
             UpdateExpression: 'SET #status = :status',
             ExpressionAttributeNames: {
                 '#status': 'status',
