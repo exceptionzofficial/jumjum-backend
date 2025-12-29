@@ -6,6 +6,7 @@ require('dotenv').config();
 // Import routes
 const menuItemsRoutes = require('./src/routes/menuItems');
 const billingRoutes = require('./src/routes/billing');
+const authRoutes = require('./src/routes/auth');
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.get('/', (req, res) => {
 });
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/menu-items', menuItemsRoutes);
 app.use('/api/billing', billingRoutes);
 
